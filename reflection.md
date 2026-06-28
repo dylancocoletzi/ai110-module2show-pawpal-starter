@@ -14,6 +14,8 @@ My initial UML design included four classes: `Owner`, `Pet`, `Task`, and `Schedu
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+Yes, the design changed in three ways after reviewing the skeleton against the requirements. First, I added a `preferences` field to `Owner` because the requirements specify "basic info and preferences" but the initial design only stored a name. Second, I added a `start_time` attribute to `Scheduler` because without a day start anchor (e.g. `"9:00 AM"`), `explain_plan()` could not generate meaningful timestamps for each task. Third, I identified that `explain_plan()` needed a guard to handle being called before `build_schedule()` — without it, the method would silently return an empty list with no indication that the schedule had not been built yet.
+
 ---
 
 ## 2. Scheduling Logic and Tradeoffs

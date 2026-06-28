@@ -74,33 +74,11 @@ for pet, task in scheduler.filter_tasks(pet_name="Luna", status="pending"):
 
 print()
 
-# --- Conflict detection: normal schedule has no overlaps ---
-print("=== Conflict Detection (normal schedule) ===")
-scheduler.build_schedule(sort_by="due_time")
-for line in scheduler.detect_conflicts():
-    print(line)
-
-print()
-
-# --- Conflict detection: two tasks manually placed at the same time ---
-print("=== Conflict Detection (two tasks at the same time) ===")
-# Simulate Mochi's vet visit and Luna's grooming both booked at 10:00 AM
-scheduler.schedule.append({
-    "pet": "Mochi",
-    "task": "Vet visit",
-    "start_time": "10:00 AM",   # starts at 10:00, runs 45 min → ends 10:45
-    "duration": 45,
-    "priority": "high",
-    "due_time": "10:45 AM",
-})
-scheduler.schedule.append({
-    "pet": "Luna",
-    "task": "Grooming appointment",
-    "start_time": "10:15 AM",   # starts at 10:15 — overlaps Vet visit above
-    "duration": 30,
-    "priority": "medium",
-    "due_time": "10:45 AM",
-})
+# --- Conflict detection: flags tasks that finish after their due_time ---
+print("=== Conflict Detection (deadline misses) ===")
+# Sort by priority so high-priority tasks go first regardless of due time.
+# This can push a short-deadline task late enough to miss its deadline.
+scheduler.build_schedule(sort_by="priority")
 for line in scheduler.detect_conflicts():
     print(line)
 

@@ -167,36 +167,25 @@ class Scheduler:
         return results
 
     def detect_conflicts(self) -> list[str]:
-        """Check the built schedule for overlapping time windows and return warning strings — never raises."""
+        """Check each scheduled task and warn if it will finish after its own due_time — never raises."""
         if not self.schedule:
             return ["Warning: No schedule built yet. Call build_schedule() first."]
 
         warnings = []
 
-        # Pre-compute time windows, skipping any entry that can't be parsed
-        windows = []
         for entry in self.schedule:
             try:
                 start = self._time_to_minutes(entry["start_time"])
                 end = start + entry["duration"]
-                windows.append((start, end, entry))
+                deadline = self._time_to_minutes(entry["due_time"])
+                if end > deadline:
+                    end_str = self._format_time(end // 60, end % 60)
+                    warnings.append(
+                        f"Warning: '{entry['task']}' for {entry['pet']} finishes at {end_str} "
+                        f"but was due by {entry['due_time']}."
+                    )
             except (ValueError, KeyError):
                 warnings.append(f"Warning: Could not parse time for '{entry.get('task', 'unknown')}' — skipped.")
-
-        # Check every unique pair for overlap
-        for i in range(len(windows)):
-            for j in range(i + 1, len(windows)):
-                start_a, end_a, entry_a = windows[i]
-                start_b, end_b, entry_b = windows[j]
-                if start_a < end_b and start_b < end_a:
-                    end_a_str = self._format_time(end_a // 60, end_a % 60)
-                    end_b_str = self._format_time(end_b // 60, end_b % 60)
-                    warnings.append(
-                        f"Warning: '{entry_a['task']}' ({entry_a['pet']}, "
-                        f"{entry_a['start_time']}–{end_a_str}) overlaps with "
-                        f"'{entry_b['task']}' ({entry_b['pet']}, "
-                        f"{entry_b['start_time']}–{end_b_str})"
-                    )
 
         return warnings if warnings else ["No conflicts detected."]
 

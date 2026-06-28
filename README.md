@@ -61,17 +61,60 @@ Today's Schedule for Jordan
 
 ```bash
 # Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python3 -m pytest tests/test_pawpal.py -v
 ```
+
+The test suite covers 17 behaviors across two categories:
+
+**Happy paths** — verifies that core features work correctly under normal use:
+- Sorting tasks by due time and priority produces the correct order
+- Filtering by pet name and completion status returns the right tasks
+- Daily and weekly recurring tasks advance their due date by the correct interval
+- Completing a recurring task automatically appends the next occurrence
+- Conflict detection returns clean when all tasks finish on time, and warns when a task is pushed past its deadline
+
+**Edge cases** — verifies the system handles boundary conditions without crashing:
+- Completing a non-recurring task does not append a new task
+- `next_occurrence()` returns `None` when no due date is set
+- Filtering with no matching pet returns an empty list
+- `detect_conflicts()` returns a warning before a schedule is built
+- A task too long for the time budget lands in `skipped`, not `schedule`
+- All-completed tasks produce an empty schedule
 
 Sample test output:
 
 ```
-# Paste your pytest output here
+============================= test session starts ==============================
+platform darwin -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- /Library/Frameworks/Python.framework/Versions/3.13/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/dylancocoletzi/Desktop/ai110-module2show-pawpal-starter
+plugins: anyio-4.13.0
+collecting ... collected 17 items
+
+tests/test_pawpal.py::test_mark_complete_changes_status PASSED           [  5%]
+tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [ 11%]
+tests/test_pawpal.py::test_sort_by_due_time_orders_earliest_first PASSED [ 17%]
+tests/test_pawpal.py::test_sort_by_priority_orders_high_first PASSED     [ 23%]
+tests/test_pawpal.py::test_filter_by_pet_name_returns_only_that_pet PASSED [ 29%]
+tests/test_pawpal.py::test_filter_by_pending_excludes_completed PASSED   [ 35%]
+tests/test_pawpal.py::test_daily_recurring_task_advances_by_one_day PASSED [ 41%]
+tests/test_pawpal.py::test_weekly_recurring_task_advances_by_seven_days PASSED [ 47%]
+tests/test_pawpal.py::test_complete_recurring_task_appends_next_occurrence PASSED [ 52%]
+tests/test_pawpal.py::test_no_conflict_when_tasks_finish_on_time PASSED  [ 58%]
+tests/test_pawpal.py::test_conflict_fires_when_task_finishes_after_deadline PASSED [ 64%]
+tests/test_pawpal.py::test_complete_non_recurring_task_does_not_append PASSED [ 70%]
+tests/test_pawpal.py::test_next_occurrence_returns_none_without_due_date PASSED [ 76%]
+tests/test_pawpal.py::test_filter_returns_empty_list_when_no_match PASSED [ 82%]
+tests/test_pawpal.py::test_detect_conflicts_warns_before_schedule_is_built PASSED [ 88%]
+tests/test_pawpal.py::test_task_too_long_goes_to_skipped PASSED          [ 94%]
+tests/test_pawpal.py::test_all_completed_tasks_produce_empty_schedule PASSED [100%]
+
+============================== 17 passed in 0.02s ==============================
 ```
+
+**Confidence Level: ★★★★☆ (4/5)**
+
+The scheduling logic, filtering, recurring tasks, and conflict detection all pass their tests with no failures. The main gap is UI behavior — the Streamlit app itself is not covered by automated tests, so interactions like marking a task complete or generating a schedule from the UI are verified manually rather than automatically. A full 5/5 would require end-to-end UI testing.
 
 ## 📐 Smarter Scheduling
 

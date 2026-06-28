@@ -101,6 +101,7 @@ class Scheduler:
     def build_schedule(self, sort_by: str = "due_time"):
         """Sort tasks by the chosen strategy and fit them into the available time budget."""
         self.schedule = []
+        self.skipped = []
         all_tasks = self.get_all_tasks()
         sorted_tasks = self.sort_tasks(all_tasks, sort_by=sort_by)
 
@@ -109,6 +110,12 @@ class Scheduler:
 
         for pet, task in sorted_tasks:
             if minutes_used + task.duration_minutes > self.available_minutes:
+                self.skipped.append({
+                    "pet": pet.name,
+                    "task": task.title,
+                    "duration": task.duration_minutes,
+                    "priority": task.priority,
+                })
                 continue
             task_start = self._format_time(start_hour, start_minute + minutes_used)
             self.schedule.append({
@@ -118,6 +125,7 @@ class Scheduler:
                 "duration": task.duration_minutes,
                 "priority": task.priority,
                 "due_time": task.due_time,
+                "recurs": task.recurs,
             })
             minutes_used += task.duration_minutes
 
@@ -195,9 +203,10 @@ class Scheduler:
             return ["No schedule built yet. Call build_schedule() first."]
         explanations = []
         for entry in self.schedule:
+            recurs_label = f", repeats {entry['recurs']}" if entry.get("recurs") else ""
             line = (
                 f"{entry['start_time']} — {entry['task']} for {entry['pet']} "
-                f"({entry['duration']} min, {entry['priority']} priority, due {entry['due_time']})"
+                f"({entry['duration']} min, {entry['priority']} priority, due {entry['due_time']}{recurs_label})"
             )
             explanations.append(line)
         return explanations

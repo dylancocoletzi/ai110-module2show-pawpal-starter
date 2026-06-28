@@ -11,10 +11,12 @@ class Task:
     priority_value: int = field(init=False)
 
     def __post_init__(self):
+        """Map priority string to a numeric value for sorting."""
         mapping = {"low": 1, "medium": 2, "high": 3}
         self.priority_value = mapping.get(self.priority, 0)
 
     def mark_complete(self):
+        """Mark this task as completed."""
         self.completed = True
 
 
@@ -25,12 +27,15 @@ class Pet:
     tasks: list = field(default_factory=list)
 
     def add_task(self, task: Task):
+        """Add a task to this pet's task list."""
         self.tasks.append(task)
 
     def list_tasks(self) -> list:
+        """Return all tasks for this pet."""
         return self.tasks
 
     def pending_tasks(self) -> list:
+        """Return only tasks that have not been completed."""
         return [t for t in self.tasks if not t.completed]
 
 
@@ -40,9 +45,11 @@ class Owner:
     pets: list = field(default_factory=list)
 
     def add_pet(self, pet: Pet):
+        """Add a pet to this owner's pet list."""
         self.pets.append(pet)
 
     def list_pets(self) -> list:
+        """Return all pets belonging to this owner."""
         return self.pets
 
 
@@ -54,6 +61,7 @@ class Scheduler:
         self.schedule: list[dict] = []
 
     def get_all_tasks(self) -> list:
+        """Aggregate pending tasks across all of the owner's pets as (pet, task) tuples."""
         all_tasks = []
         for pet in self.owner.pets:
             for task in pet.pending_tasks():
@@ -61,6 +69,7 @@ class Scheduler:
         return all_tasks
 
     def build_schedule(self):
+        """Sort tasks by priority and fit them into the available time budget."""
         self.schedule = []
         all_tasks = self.get_all_tasks()
         sorted_tasks = sorted(all_tasks, key=lambda x: x[1].priority_value, reverse=True)
@@ -83,6 +92,7 @@ class Scheduler:
             minutes_used += task.duration_minutes
 
     def _parse_time(self, time_str: str):
+        """Convert a time string like '9:00 AM' into (hour, minute) integers."""
         time_part, period = time_str.split(" ")
         hour, minute = map(int, time_part.split(":"))
         if period == "PM" and hour != 12:
@@ -90,6 +100,7 @@ class Scheduler:
         return hour, minute
 
     def _format_time(self, hour: int, minute: int) -> str:
+        """Convert (hour, minute) integers back into a readable time string."""
         hour += minute // 60
         minute = minute % 60
         period = "AM" if hour < 12 else "PM"
@@ -99,6 +110,7 @@ class Scheduler:
         return f"{display_hour}:{minute:02d} {period}"
 
     def filter_by_priority(self, min_priority: str) -> list:
+        """Return only tasks at or above the given minimum priority level."""
         min_value = {"low": 1, "medium": 2, "high": 3}.get(min_priority, 1)
         return [
             (pet, task) for pet, task in self.get_all_tasks()
@@ -106,6 +118,7 @@ class Scheduler:
         ]
 
     def explain_plan(self) -> list:
+        """Format each scheduled entry into a human-readable string."""
         if not self.schedule:
             return ["No schedule built yet. Call build_schedule() first."]
         explanations = []

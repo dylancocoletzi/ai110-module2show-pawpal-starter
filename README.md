@@ -79,10 +79,10 @@ Sample test output:
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_tasks()`, `Scheduler._time_to_minutes()` | Supports three strategies: `due_time` (earliest deadline first), `priority` (high → low), and `due_time_priority` (deadline first, priority as tiebreaker). Time strings like "9:30 AM" are converted to total minutes for reliable numeric comparison. |
+| Filtering | `Scheduler.filter_tasks()` | Filters pending (pet, task) tuples by pet name, completion status (`"pending"` / `"completed"`), or both combined. Case-insensitive pet name matching. |
+| Conflict handling | `Scheduler.detect_conflicts()` | After `build_schedule()` runs, checks every unique pair of scheduled entries for overlapping time windows using the interval overlap formula: `start_A < end_B AND start_B < end_A`. Returns warning strings and never raises an exception. |
+| Recurring tasks | `Task.next_occurrence()`, `Pet.complete_task()` | Tasks marked `recurs="daily"` or `recurs="weekly"` automatically generate a new instance with a `due_date` advanced by `timedelta(days=1)` or `timedelta(weeks=1)` when completed via `Pet.complete_task()`. |
 
 ## 📸 Demo Walkthrough
 

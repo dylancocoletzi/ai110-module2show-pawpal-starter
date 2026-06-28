@@ -25,10 +25,14 @@ Yes, the design changed significantly after reviewing the full requirements. Fir
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
+The scheduler considers three constraints: `available_minutes` (a daily time budget, defaulting to 480 minutes), `due_time` (the deadline each task must be completed by), and `priority` (a labeled urgency level of low, medium, or high). I decided that `due_time` mattered most because a task due at 9:30 AM genuinely cannot wait until the afternoon regardless of how it is labeled — deadlines reflect real-world urgency in a way that a priority label alone does not. Priority is used as a tiebreaker when two tasks share the same deadline. The time budget acts as a hard cap: any task that would push the schedule past the available window is skipped rather than dropped, so shorter tasks can still fit even if a longer one could not.
+
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+
+The scheduler packs tasks sequentially into a single timeline, meaning two tasks are never scheduled to overlap even when they realistically could. For example, while Mochi is eating her morning feeding (10 minutes), the owner could clean Luna's litter box at the same time — but the scheduler treats those as back-to-back instead. The tradeoff is simplicity over real-world parallelism. For a first version of a pet care tool, this is reasonable: a linear schedule is easier to read, easier to follow, and avoids the complexity of tracking which tasks require the owner's active attention versus which ones can run in the background. A future version could tag tasks as "supervised" or "passive" and schedule passive tasks in parallel.
 
 ---
 
